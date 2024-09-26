@@ -1,34 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple React App</title>
-    <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React App with Recharts</title>
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- Recharts -->
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .counter { font-size: 2em; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .card-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root"></div>
+
     <script type="text/babel">
-        function App() {
-            const [count, setCount] = React.useState(0);
+      const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } = Recharts;
 
-            return (
-                <div>
-                    <h1>Simple React Counter</h1>
-                    <div className="counter">{count}</div>
-                    <button onClick={() => setCount(count + 1)}>Increment</button>
-                    <button onClick={() => setCount(count - 1)}>Decrement</button>
+      const totalGrantAwarded = 20000;
+
+      const data = [
+        {
+          category: 'Sober Housing Assistance',
+          initial: 10000,
+          spent: 10000 - 1357.43,
+          remaining: 1357.43,
+        },
+        {
+          category: 'Peer Recovery Support',
+          initial: 7500,
+          spent: 7500 - 3532.85,
+          remaining: 3532.85,
+        },
+        {
+          category: 'Contingency/Admin',
+          initial: 2500,
+          spent: 2500 - 1532.03,
+          remaining: 1532.03,
+        },
+      ];
+
+      const totalSpent = data.reduce((sum, item) => sum + item.spent, 0);
+      const totalRemaining = totalGrantAwarded - totalSpent;
+
+      const formatCurrency = (value) => `$${value.toFixed(2)}`;
+
+      const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+      function Dashboard() {
+        return (
+          <div>
+            <h1>BLADE Initiative Spend Down Dashboard</h1>
+
+            <div className="card">
+              <div className="card-header">Total Grant Overview</div>
+              <div>Total Grant Awarded: {formatCurrency(totalGrantAwarded)}</div>
+              <div>Total Spent: {formatCurrency(totalSpent)}</div>
+              <div>Total Remaining: {formatCurrency(totalRemaining)}</div>
+            </div>
+
+            <div className="grid">
+              {data.map((item) => (
+                <div key={item.category} className="card">
+                  <div className="card-header">{item.category}</div>
+                  <div>Initial: {formatCurrency(item.initial)}</div>
+                  <div>Spent: {formatCurrency(item.spent)}</div>
+                  <div>Remaining: {formatCurrency(item.remaining)}</div>
                 </div>
-            );
-        }
+              ))}
+            </div>
 
-        ReactDOM.render(<App />, document.getElementById('root'));
+            <div className="grid">
+              <div className="chart">
+                <h2>Spend Breakdown</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="category" />
+                    <YAxis tickFormatter={formatCurrency} />
+                    <Tooltip formatter={formatCurrency} />
+                    <Legend />
+                    <Bar dataKey="initial" fill="#8884d8" name="Initial Balance" />
+                    <Bar dataKey="spent" fill="#82ca9d" name="Spent" />
+                    <Bar dataKey="remaining" fill="#ffc658" name="Remaining" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="chart">
+                <h2>Remaining Balance Distribution</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={data}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="remaining"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={formatCurrency} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Render the Dashboard
+      ReactDOM.render(<Dashboard />, document.getElementById('root'));
     </script>
-</body>
+  </body>
 </html>
