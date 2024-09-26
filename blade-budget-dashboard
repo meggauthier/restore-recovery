@@ -1,0 +1,104 @@
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+
+const totalGrantAwarded = 20000;
+
+const data = [
+  {
+    category: 'Sober Housing Assistance',
+    initial: 10000,
+    spent: 10000 - 1357.43,
+    remaining: 1357.43,
+  },
+  {
+    category: 'Peer Recovery Support',
+    initial: 7500,
+    spent: 7500 - 3532.85,
+    remaining: 3532.85,
+  },
+  {
+    category: 'Contingency/Admin',
+    initial: 2500,
+    spent: 2500 - 1532.03,
+    remaining: 1532.03,
+  },
+];
+
+const totalSpent = data.reduce((sum, item) => sum + item.spent, 0);
+const totalRemaining = totalGrantAwarded - totalSpent;
+
+const formatCurrency = (value) => `$${value.toFixed(2)}`;
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+const Dashboard = () => (
+  <div className="p-4">
+    <h1 className="text-2xl font-bold mb-4">BLADE Initiative Spend Down Dashboard</h1>
+    
+    <Card className="mb-4">
+      <CardHeader>Total Grant Overview</CardHeader>
+      <CardContent>
+        <p>Total Grant Awarded: {formatCurrency(totalGrantAwarded)}</p>
+        <p>Total Spent: {formatCurrency(totalSpent)}</p>
+        <p>Total Remaining: {formatCurrency(totalRemaining)}</p>
+      </CardContent>
+    </Card>
+    
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {data.map((item) => (
+        <Card key={item.category}>
+          <CardHeader>{item.category}</CardHeader>
+          <CardContent>
+            <p>Initial: {formatCurrency(item.initial)}</p>
+            <p>Spent: {formatCurrency(item.spent)}</p>
+            <p>Remaining: {formatCurrency(item.remaining)}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <h2 className="text-xl font-bold mb-2">Spend Breakdown</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" />
+            <YAxis tickFormatter={formatCurrency} />
+            <Tooltip formatter={formatCurrency} />
+            <Legend />
+            <Bar dataKey="initial" fill="#8884d8" name="Initial Balance" />
+            <Bar dataKey="spent" fill="#82ca9d" name="Spent" />
+            <Bar dataKey="remaining" fill="#ffc658" name="Remaining" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div>
+        <h2 className="text-xl font-bold mb-2">Remaining Balance Distribution</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="remaining"
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={formatCurrency} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  </div>
+);
+
+export default Dashboard;
